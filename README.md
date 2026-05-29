@@ -26,9 +26,9 @@
 
 ---
 
-##  Demo
+## Demo
 
->  *[Watch the full demo video →](#)*
+[![App Demo](https://github.com/user-attachments/assets/9ba0f495-f6f4-4e17-9ab2-9bc429de542e)](https://github.com/user-attachments/assets/9ba0f495-f6f4-4e17-9ab2-9bc429de542e)
 
 ---
 
