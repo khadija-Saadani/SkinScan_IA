@@ -1,0 +1,120 @@
+{% extends 'base.html' %}
+{% block title %}Patients{% endblock %}
+
+{% block content %}
+<div class="page-header d-flex align-items-center justify-content-between flex-wrap gap-2">
+  <div>
+    <h2><i class="bi bi-people me-2 text-primary"></i>My Patients</h2>
+    <p>{{ patients | length }} diagnosis(es) recorded in your history</p>
+  </div>
+  <a href="{{ url_for('predict') }}" class="btn btn-primary">
+    <i class="bi bi-plus me-1"></i>New Analysis
+  </a>
+</div>
+
+<!-- Search bar -->
+<form method="GET" class="mb-3">
+  <div class="search-bar" style="max-width:360px;">
+    <i class="bi bi-search si"></i>
+    <input type="text" name="q" class="form-control" placeholder="Search for a patient..." value="{{ search or '' }}"/>
+  </div>
+</form>
+
+<div class="card">
+  <div class="card-body p-0">
+    {% if patients %}
+    <div class="table-responsive">
+      <table class="table table-hover mb-0 ptable">
+        <thead>
+          <tr>
+            <th class="ps-4">#</th>
+            <th>Patient</th>
+            <th>Age</th>
+            <th>Result</th>
+            <th>Confidence</th>
+            <th>Image</th>
+            <th>Date</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for p in patients %}
+          <tr>
+            <td class="ps-4 text-muted small">{{ p.id }}</td>
+            <td class="fw-semibold">{{ p.name }}</td>
+            <td>{{ p.age }} years</td>
+            <td>
+              {% if p.result == 'Malignant' %}
+                <span class="tag tag-m"><i class="bi bi-exclamation-triangle me-1"></i>Malignant</span>
+              {% else %}
+                <span class="tag tag-b"><i class="bi bi-check-circle me-1"></i>Benign</span>
+              {% endif %}
+            </td>
+            <td>
+              <div class="d-flex align-items-center gap-2">
+                <div class="conf-track" style="width:70px;">
+                  <div class="conf-bar conf-{{ p.result | lower }}" style="width:{{ (p.probability * 100) | round(0) }}%"></div>
+                </div>
+                <span class="small fw-semibold">{{ (p.probability * 100) | round(1) }}%</span>
+              </div>
+            </td>
+            <td>
+              {% if p.image_path %}
+                <img src="{{ url_for('static', filename=p.image_path) }}" width="55" height="45"
+                     style="object-fit:cover;border-radius:8px;cursor:pointer;border:1px solid var(--border);"
+                     onclick="showImg(this.src)"/>
+              {% else %}<span class="text-muted">—</span>{% endif %}
+            </td>
+            <td class="text-muted small">
+              {{ p.created_at.strftime('%d/%m/%Y') if p.created_at else '—' }}<br>
+              <span style="font-size:0.72rem;">{{ p.created_at.strftime('%H:%M') if p.created_at else '' }}</span>
+            </td>
+            <td>
+              <form method="POST" action="{{ url_for('delete_patient', patient_id=p.id) }}"
+                    onsubmit="return confirm('Permanently delete this patient record?')">
+                <button type="submit" class="btn btn-sm btn-outline-danger"
+                        style="width:32px;height:32px;padding:0;display:flex;align-items:center;justify-content:center;border-radius:8px;"
+                        title="Delete">
+                  <i class="bi bi-trash"></i>
+                </button>
+              </form>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+       </table>
+    </div>
+    {% else %}
+    <div class="empty-state">
+      <div class="empty-icon">{{ '🔍' if search else '📋' }}</div>
+      {% if search %}
+        <p class="fw-semibold mb-1">No patient found for "{{ search }}"</p>
+        <a href="{{ url_for('patients') }}" class="btn btn-outline-secondary btn-sm mt-2">Clear search</a>
+      {% else %}
+        <p class="fw-semibold mb-1">No patients recorded</p>
+        <p class="small mb-3">Start by running your first analysis.</p>
+        <a href="{{ url_for('predict') }}" class="btn btn-primary">Run an analysis</a>
+      {% endif %}
+    </div>
+    {% endif %}
+  </div>
+</div>
+
+<!-- Image Modal -->
+<div class="modal fade" id="imgModal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered modal-sm">
+    <div class="modal-content border-0 bg-transparent shadow-none">
+      <img id="modalImg" src="" alt="lesion" style="width:100%;border-radius:14px;box-shadow:0 20px 60px rgba(0,0,0,0.4);"/>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function showImg(src) {
+  document.getElementById('modalImg').src = src;
+  new bootstrap.Modal(document.getElementById('imgModal')).show();
+}
+</script>
+{% endblock %}

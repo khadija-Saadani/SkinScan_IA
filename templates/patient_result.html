@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>SkinScan AI — Your Result</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"/>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet"/>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}"/>
+</head>
+<body>
+<nav class="navbar sticky-top">
+  <div class="container d-flex align-items-center">
+    <a class="navbar-brand" href="{{ url_for('patient_dashboard') }}">Skin<span>Scan</span> AI</a>
+    <div class="ms-auto d-flex gap-2">
+      <a href="{{ url_for('patient_dashboard') }}" class="nav-pill"><i class="bi bi-grid-1x2"></i> My Scans</a>
+      <a href="{{ url_for('patient_ai') }}" class="nav-pill" style="background:linear-gradient(135deg,#7c3aed,#9333ea);color:white;"><i class="bi bi-stars"></i> Ask Aria</a>
+      <a href="{{ url_for('patient_logout') }}" class="btn btn-sm btn-outline-secondary"><i class="bi bi-box-arrow-right"></i></a>
+    </div>
+  </div>
+</nav>
+
+<div class="container py-4">
+  <div class="page-header">
+    <h2><i class="bi bi-clipboard2-pulse me-2 text-primary"></i>Your Scan Result</h2>
+    <p>AI analysis complete — {{ body_part }}</p>
+  </div>
+
+  <div class="row g-4 justify-content-center">
+    <!-- Image -->
+    <div class="col-lg-5">
+      <div class="card h-100">
+        <div class="card-header"><i class="bi bi-image me-2"></i>Analyzed Image</div>
+        <div class="card-body p-3 text-center">
+          <img src="{{ img }}" alt="Your skin lesion" class="result-img"/>
+        </div>
+      </div>
+    </div>
+
+    <!-- Result -->
+    <div class="col-lg-6">
+      <div class="card h-100">
+        <div class="card-header"><i class="bi bi-bar-chart-line me-2"></i>AI Analysis Result</div>
+        <div class="card-body p-4">
+          <div class="text-center mb-4">
+            <p class="text-muted small fw-bold text-uppercase mb-2">Result</p>
+            <span class="result-badge result-{{ result | lower }}">
+              {% if result == 'Malignant' %}⚠️ Potentially Malignant{% else %}✅ Likely Benign{% endif %}
+            </span>
+          </div>
+
+          <div class="mb-4">
+            <div class="d-flex justify-content-between mb-2">
+              <span class="fw-semibold small">AI Confidence Score</span>
+              <span class="fw-bold fs-5">{{ prob }}%</span>
+            </div>
+            <div class="conf-track">
+              <div class="conf-bar conf-{{ result | lower }}" id="confBar" style="width:0%"></div>
+            </div>
+          </div>
+
+          {% if result == 'Malignant' %}
+          <div class="p-3 rounded-3 mb-4" style="background:#ffeef1;border:1px solid #f5c2c7;">
+            <p class="fw-bold mb-2" style="color:var(--danger)"><i class="bi bi-exclamation-triangle-fill me-2"></i>Action Required</p>
+            <p class="mb-2 small">The AI has flagged this lesion as potentially malignant. <strong>A dermatologist has been notified</strong> and will review your case.</p>
+            <p class="mb-0 small">Please check your dashboard for the doctor's response. In the meantime, avoid sun exposure on the affected area.</p>
+          </div>
+          <div class="d-flex align-items-center gap-2 p-3 rounded-3" style="background:#fff8ee;border:1px solid #fde8b0;">
+            <i class="bi bi-bell-fill text-warning fs-4"></i>
+            <div>
+              <p class="fw-bold mb-0 small">Doctor Notified</p>
+              <p class="text-muted mb-0" style="font-size:0.78rem;">A dermatologist will review this scan and respond shortly.</p>
+            </div>
+          </div>
+          {% else %}
+          <div class="p-3 rounded-3 mb-4" style="background:#e8fdf7;border:1px solid #b2dfdb;">
+            <p class="fw-bold mb-2" style="color:#00a878"><i class="bi bi-check-circle-fill me-2"></i>Reassuring Result</p>
+            <p class="mb-0 small">The lesion appears benign according to the AI analysis. Continue monitoring it regularly. If it changes in size, color, or shape, scan again or consult a dermatologist.</p>
+          </div>
+          {% endif %}
+
+          <div class="d-flex gap-2 mt-3">
+            <a href="{{ url_for('patient_scan') }}" class="btn btn-primary flex-fill">
+              <i class="bi bi-plus-circle me-1"></i>New Scan
+            </a>
+            <a href="{{ url_for('patient_dashboard') }}" class="btn btn-outline-secondary flex-fill">
+              <i class="bi bi-grid-1x2 me-1"></i>My Dashboard
+            </a>
+          </div>
+          {% if result == 'Malignant' %}
+          <a href="{{ url_for('patient_ai') }}" class="btn w-100 mt-2 text-white fw-bold"
+             style="background:linear-gradient(135deg,#7c3aed,#9333ea);border:none;border-radius:12px;padding:0.75rem;">
+            <i class="bi bi-stars me-2"></i>Have questions? Ask Aria — Your AI Health Guide
+          </a>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <p class="text-center text-muted mt-4 small">
+     This result is for screening purposes only and does not constitute a medical diagnosis.
+  </p>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+  window.addEventListener('load', () => {
+    setTimeout(() => { document.getElementById('confBar').style.width = '{{ prob }}%'; }, 400);
+  });
+</script>
+</body>
+</html>

@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>SkinScan AI — Early Detection Saves Lives</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"/>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Figtree:wght@300;400;500;600;700;800&family=Syne:wght@700;800&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      --primary: #0a6eb4; --primary-dark: #084e80; --accent: #00c8a0;
+      --danger: #e8445a; --text: #1a2535; --muted: #6b7a99;
+      --bg: #f0f4f8; --surface: #fff; --border: #dde3ee;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Figtree', sans-serif; color: var(--text); background: var(--surface); }
+    .syne { font-family: 'Syne', sans-serif; }
+
+    /* NAV */
+    nav { padding: 1rem 0; border-bottom: 1px solid var(--border); background: white; position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 16px rgba(10,110,180,0.06); }
+    .brand { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 1.4rem; color: var(--primary); text-decoration: none; }
+    .brand span { color: var(--accent); }
+    .btn-nav-doctor { border: 1.5px solid var(--border); border-radius: 10px; padding: 0.4rem 1rem; font-weight: 600; font-size: 0.85rem; color: var(--muted); text-decoration: none; transition: all 0.2s; }
+    .btn-nav-doctor:hover { border-color: var(--primary); color: var(--primary); }
+    .btn-nav-patient { background: var(--primary); border-radius: 10px; padding: 0.4rem 1.1rem; font-weight: 600; font-size: 0.85rem; color: white; text-decoration: none; transition: all 0.2s; }
+    .btn-nav-patient:hover { background: var(--primary-dark); color: white; transform: translateY(-1px); }
+
+    /* HERO */
+    .hero {
+      min-height: 92vh;
+      display: grid; grid-template-columns: 1fr 1fr;
+      align-items: center; gap: 4rem;
+      padding: 5rem 0;
+    }
+    @media (max-width: 768px) { .hero { grid-template-columns: 1fr; padding: 3rem 0; gap: 2rem; } .hero-visual { display: none; } }
+    .hero-badge { display: inline-flex; align-items: center; gap: 0.5rem; background: #e8f3fc; color: var(--primary); border-radius: 50px; padding: 0.35rem 1rem; font-size: 0.8rem; font-weight: 700; margin-bottom: 1.5rem; }
+    .hero-badge .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); animation: pulse 2s infinite; }
+    .hero h1 { font-family: 'Syne', sans-serif; font-size: 3.5rem; font-weight: 800; line-height: 1.1; margin-bottom: 1.25rem; }
+    .hero h1 .highlight { background: linear-gradient(135deg, var(--primary), var(--accent)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+    .hero p { font-size: 1.1rem; color: var(--muted); line-height: 1.75; margin-bottom: 2rem; max-width: 480px; }
+    .hero-cta { display: flex; gap: 1rem; flex-wrap: wrap; }
+    .btn-primary-lg { background: var(--primary); color: white; border-radius: 14px; padding: 0.9rem 2rem; font-weight: 700; font-size: 1rem; text-decoration: none; transition: all 0.2s; display: inline-flex; align-items: center; gap: 0.5rem; border: none; }
+    .btn-primary-lg:hover { background: var(--primary-dark); color: white; transform: translateY(-2px); box-shadow: 0 8px 24px rgba(10,110,180,0.3); }
+    .btn-outline-lg { border: 2px solid var(--border); color: var(--text); border-radius: 14px; padding: 0.9rem 2rem; font-weight: 700; font-size: 1rem; text-decoration: none; transition: all 0.2s; display: inline-flex; align-items: center; gap: 0.5rem; }
+    .btn-outline-lg:hover { border-color: var(--primary); color: var(--primary); }
+
+    /* HERO VISUAL */
+    .hero-visual { position: relative; }
+    .scan-card {
+      background: white; border-radius: 20px; padding: 2rem;
+      box-shadow: 0 20px 60px rgba(10,110,180,0.12);
+      border: 1px solid var(--border);
+    }
+    .scan-card .scan-img-placeholder {
+      background: linear-gradient(135deg, #e8f3fc, #f0f4f8);
+      border-radius: 14px; height: 200px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 5rem; margin-bottom: 1.5rem;
+    }
+    .result-chip { display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.5rem 1.2rem; border-radius: 50px; font-weight: 700; font-size: 0.9rem; }
+    .result-chip.benign { background: #e8fdf7; color: #00a878; }
+    .result-chip.malignant { background: #ffeef1; color: var(--danger); }
+    .conf-bar-wrap { background: #f0f4f8; border-radius: 99px; height: 8px; margin: 0.75rem 0; overflow: hidden; }
+    .conf-bar-fill { height: 100%; border-radius: 99px; background: linear-gradient(90deg, #00e8bf, var(--accent)); width: 0%; transition: width 1.5s ease; }
+    .floating-badge {
+      position: absolute; background: white; border-radius: 14px; padding: 0.8rem 1.2rem;
+      box-shadow: 0 8px 32px rgba(10,110,180,0.15); border: 1px solid var(--border);
+      font-size: 0.82rem; font-weight: 600; display: flex; align-items: center; gap: 0.5rem;
+    }
+    .floating-badge.top-right { top: -20px; right: -20px; }
+    .floating-badge.bottom-left { bottom: -15px; left: -20px; }
+
+    /* STATS BAR */
+    .stats-bar { background: var(--bg); padding: 2.5rem 0; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+    .stat-item { text-align: center; }
+    .stat-num { font-family: 'Syne', sans-serif; font-size: 2.2rem; font-weight: 800; color: var(--primary); }
+    .stat-desc { font-size: 0.82rem; color: var(--muted); font-weight: 500; }
+
+    /* HOW IT WORKS */
+    .section { padding: 5rem 0; }
+    .section-label { font-size: 0.78rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px; color: var(--accent); margin-bottom: 0.75rem; }
+    .section-title { font-family: 'Syne', sans-serif; font-size: 2.2rem; font-weight: 800; margin-bottom: 1rem; }
+    .section-sub { color: var(--muted); font-size: 1rem; max-width: 520px; line-height: 1.75; }
+
+    .step-card { background: white; border: 1.5px solid var(--border); border-radius: 18px; padding: 2rem; transition: all 0.25s; position: relative; overflow: hidden; }
+    .step-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; background: linear-gradient(90deg, var(--primary), var(--accent)); opacity: 0; transition: opacity 0.2s; }
+    .step-card:hover { transform: translateY(-4px); box-shadow: 0 16px 40px rgba(10,110,180,0.1); border-color: var(--primary); }
+    .step-card:hover::before { opacity: 1; }
+    .step-num { width: 40px; height: 40px; border-radius: 12px; background: var(--primary); color: white; display: flex; align-items: center; justify-content: center; font-family: 'Syne', sans-serif; font-weight: 800; font-size: 1rem; margin-bottom: 1rem; }
+    .step-icon { font-size: 2rem; margin-bottom: 0.75rem; }
+    .step-card h5 { font-weight: 700; margin-bottom: 0.5rem; }
+    .step-card p { color: var(--muted); font-size: 0.88rem; line-height: 1.65; margin: 0; }
+
+    /* WHO IS IT FOR */
+    .profile-card { border-radius: 20px; padding: 2.5rem; text-align: center; border: 2px solid var(--border); transition: all 0.25s; }
+    .profile-card:hover { transform: translateY(-4px); }
+    .profile-card.patient-card { background: linear-gradient(135deg, #f0f7ff, #e8f3fc); border-color: var(--primary); }
+    .profile-card.doctor-card { background: linear-gradient(135deg, #e8fdf7, #f0faf7); border-color: var(--accent); }
+    .profile-card .profile-icon { font-size: 4rem; margin-bottom: 1.25rem; }
+    .profile-card h4 { font-family: 'Syne', sans-serif; font-weight: 800; margin-bottom: 0.75rem; }
+    .profile-card p { color: var(--muted); font-size: 0.9rem; line-height: 1.7; margin-bottom: 1.5rem; }
+    .profile-feature { display: flex; align-items: center; gap: 0.6rem; font-size: 0.85rem; margin-bottom: 0.5rem; font-weight: 500; }
+    .profile-feature i { color: var(--accent); }
+    .btn-profile { display: block; padding: 0.75rem; border-radius: 12px; font-weight: 700; text-decoration: none; margin-top: 1.5rem; transition: all 0.2s; font-size: 0.9rem; }
+    .btn-profile.patient { background: var(--primary); color: white; }
+    .btn-profile.patient:hover { background: var(--primary-dark); color: white; transform: translateY(-1px); }
+    .btn-profile.doctor { background: var(--accent); color: white; }
+    .btn-profile.doctor:hover { background: #00a888; color: white; transform: translateY(-1px); }
+
+    /* DISCLAIMER */
+    .disclaimer { background: #fff8ee; border: 1px solid #fde8b0; border-radius: 14px; padding: 1.25rem 1.5rem; font-size: 0.83rem; color: #8a6d00; }
+
+    /* FOOTER */
+    footer { background: #0d1f35; color: rgba(255,255,255,0.6); padding: 2rem 0; text-align: center; font-size: 0.82rem; }
+    footer .brand-footer { font-family: 'Syne', sans-serif; font-weight: 800; color: white; font-size: 1.2rem; }
+    footer .brand-footer span { color: var(--accent); }
+
+    @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.4; } }
+    @keyframes float { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
+    .floating { animation: float 4s ease-in-out infinite; }
+  </style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="container d-flex align-items-center justify-content-between">
+    <a class="brand" href="{{ url_for('landing') }}">Skin<span>Scan</span> AI</a>
+    <div class="d-flex align-items-center gap-2">
+      <a href="{{ url_for('login') }}" class="btn-nav-doctor"><i class="bi bi-person-badge me-1"></i>Doctor Login</a>
+      <a href="{{ url_for('patient_login') }}" class="btn-nav-patient"><i class="bi bi-heart-pulse me-1"></i>Patient Portal</a>
+    </div>
+  </div>
+</nav>
+
+<!-- HERO -->
+<div class="container">
+  <div class="hero">
+    <div class="hero-content">
+      <div class="hero-badge"><div class="dot"></div>AI-Powered Skin Cancer Detection</div>
+      <h1>Detect Skin Cancer <span class="highlight">Early.</span><br>From Home.</h1>
+      <p>Upload a photo of your skin lesion and get an instant AI analysis powered by VGG16 deep learning. Results reviewed by real dermatologists.</p>
+      <div class="hero-cta">
+        <a href="{{ url_for('patient_register') }}" class="btn-primary-lg">
+          <i class="bi bi-camera"></i> Scan Your Skin — Free
+        </a>
+        <a href="#how-it-works" class="btn-outline-lg">
+          <i class="bi bi-play-circle"></i> How it Works
+        </a>
+      </div>
+      <div class="disclaimer mt-4">
+        <i class="bi bi-shield-check me-1"></i>
+        <strong>Medical disclaimer:</strong> SkinScan AI is a screening tool only. Results do not constitute a medical diagnosis. Always consult a qualified dermatologist.
+      </div>
+    </div>
+
+    <!-- Hero Visual -->
+    <div class="hero-visual floating">
+      <div class="floating-badge top-right">
+        <span style="color:var(--accent);">✅</span> Result Ready in Seconds
+      </div>
+      <div class="scan-card">
+        <div class="scan-img-placeholder">
+          <img src="../static/uploads/image1.jpg" alt="Scan preview" style="width: 1000%; height: auto; max-height: 200px; object-fit: contain;">
+        </div>
+        <div class="d-flex align-items-center justify-content-between mb-2">
+          <span class="result-chip benign">✅ Benign</span>
+          <span style="font-size:0.8rem;color:var(--muted);">AI Confidence</span>
+        </div>
+        <div class="d-flex justify-content-between align-items-center mb-1">
+          <span style="font-size:0.82rem;font-weight:600;">Score</span>
+          <span style="font-family:'Syne',sans-serif;font-weight:800;">82.4%</span>
+        </div>
+        <div class="conf-bar-wrap"><div class="conf-bar-fill" id="heroBar"></div></div>
+        <p style="font-size:0.78rem;color:var(--muted);margin:0.5rem 0 0;">Doctor review pending — you'll be notified</p>
+      </div>
+      <div class="floating-badge bottom-left">
+        <i class="bi bi-bell-fill" style="color:var(--primary);"></i> Doctor Alerted
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- STATS -->
+<div class="stats-bar">
+  <div class="container">
+    <div class="row g-4">
+      <div class="col-6 col-md-3"><div class="stat-item"><div class="stat-num">94.2%</div><div class="stat-desc">Model Accuracy</div></div></div>
+      <div class="col-6 col-md-3"><div class="stat-item"><div class="stat-num">&lt; 3s</div><div class="stat-desc">Analysis Time</div></div></div>
+      <div class="col-6 col-md-3"><div class="stat-item"><div class="stat-num">2</div><div class="stat-desc">Cancer Types Detected</div></div></div>
+      <div class="col-6 col-md-3"><div class="stat-item"><div class="stat-num">Free</div><div class="stat-desc">For All Patients</div></div></div>
+    </div>
+  </div>
+</div>
+
+<!-- HOW IT WORKS -->
+<div class="section" id="how-it-works">
+  <div class="container">
+    <div class="text-center mb-5">
+      <div class="section-label">Simple Process</div>
+      <h2 class="section-title">How SkinScan AI Works</h2>
+      <p class="section-sub mx-auto">From photo to doctor feedback in minutes — no appointment needed.</p>
+    </div>
+    <div class="row g-4">
+      <div class="col-md-3">
+        <div class="step-card">
+          <div class="step-num">1</div>
+          <h5>Take a Photo</h5>
+          <p>Photograph the suspicious skin lesion clearly. Good lighting, close-up, steady hand.</p>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="step-card">
+          <div class="step-num">2</div>
+          <h5>AI Analysis</h5>
+          <p>Our VGG16 model analyzes the image instantly, classifying it as Benign or Malignant.</p>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="step-card">
+          <div class="step-num">3</div>
+          <h5>Doctor Alerted</h5>
+          <p>If the result is concerning, a dermatologist is automatically notified and reviews your case.</p>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="step-card">
+          <div class="step-num">4</div>
+          <h5>Get Feedback</h5>
+          <p>The doctor sends you a personal response with next steps directly in your dashboard.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- WHO IS IT FOR -->
+<div class="section" style="background:var(--bg);padding: 5rem 0;">
+  <div class="container">
+    <div class="text-center mb-5">
+      <div class="section-label">Two Portals</div>
+      <h2 class="section-title">Built for Everyone</h2>
+    </div>
+    <div class="row g-4 justify-content-center">
+      <div class="col-md-5">
+        <div class="profile-card patient-card">
+          <div class="profile-icon">
+  <img src="../static/uploads/patient.png" alt="Scan preview" style="width: 100%; height: auto; max-height: 200px; object-fit:contain;">
+</div>
+          <h4>I'm a Patient</h4>
+          <p>Anyone can use SkinScan AI — no medical knowledge required. Scan your skin from the comfort of your home.</p>
+          <div class="profile-feature"><i class="bi bi-check-circle-fill"></i> Free instant AI analysis</div>
+          <div class="profile-feature"><i class="bi bi-check-circle-fill"></i> Doctor reviews your case</div>
+          <div class="profile-feature"><i class="bi bi-check-circle-fill"></i> Personal scan history</div>
+          <div class="profile-feature"><i class="bi bi-check-circle-fill"></i> No appointment needed</div>
+          <a href="{{ url_for('patient_register') }}" class="btn-profile patient">Get Started — It's Free →</a>
+        </div>
+      </div>
+      <div class="col-md-5">
+        <div class="profile-card doctor-card">
+          <div class="profile-icon">
+  <img src="../static/uploads/doctor.png" alt="Scan preview" style="width: 100%; height: auto; max-height: 200px; object-fit:contain;">
+</div>
+          <h4>I'm a Doctor</h4>
+          <p>Dermatologists and healthcare professionals get a powerful dashboard to manage patient alerts and respond efficiently.</p>
+          <div class="profile-feature"><i class="bi bi-check-circle-fill"></i> Real-time patient alerts</div>
+          <div class="profile-feature"><i class="bi bi-check-circle-fill"></i> Review all scans & images</div>
+          <div class="profile-feature"><i class="bi bi-check-circle-fill"></i> Send responses to patients</div>
+          <div class="profile-feature"><i class="bi bi-check-circle-fill"></i> AI-assisted analysis tools</div>
+          <a href="{{ url_for('login') }}" class="btn-profile doctor">Doctor Portal →</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <div class="container">
+    <div class="brand-footer mb-2">Skin<span>Scan</span> AI</div>
+    <p class="mb-1">AI-powered skin cancer early detection platform</p>
+    <p class="mb-0" style="font-size:0.75rem;">⚕️ For screening purposes only — not a substitute for professional medical diagnosis</p>
+  </div>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+  window.addEventListener('load', () => {
+    setTimeout(() => { document.getElementById('heroBar').style.width = '82%'; }, 600);
+  });
+  // Smooth scroll
+  document.querySelector('a[href="#how-it-works"]').addEventListener('click', e => {
+    e.preventDefault();
+    document.getElementById('how-it-works').scrollIntoView({ behavior: 'smooth' });
+  });
+</script>
+</body>
+</html>

@@ -1,0 +1,107 @@
+{% extends 'base.html' %}
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+<div class="dash-hero mb-4">
+  <h1>Hello, {{ session.get('full_name', 'Doctor') }} 👋</h1>
+  <p>Welcome back — {{ now.strftime('%A %d %B %Y') if now else '' }} · SkinScan AI Platform</p>
+</div>
+
+<!-- Stats -->
+<div class="row g-3 mb-4">
+  <div class="col-6 col-md-3">
+    <div class="stat-card">
+      <div class="stat-icon blue">🩺</div>
+      <div><div class="stat-val">{{ stats.total }}</div><div class="stat-lbl">Total Scans</div></div>
+    </div>
+  </div>
+  <div class="col-6 col-md-3">
+    <div class="stat-card">
+      <div class="stat-icon green">✅</div>
+      <div><div class="stat-val" style="color:var(--accent)">{{ stats.benign }}</div><div class="stat-lbl">Benign</div></div>
+    </div>
+  </div>
+  <div class="col-6 col-md-3">
+    <div class="stat-card">
+      <div class="stat-icon red">⚠️</div>
+      <div><div class="stat-val" style="color:var(--danger)">{{ stats.malignant }}</div><div class="stat-lbl">Malignant</div></div>
+    </div>
+  </div>
+  <div class="col-6 col-md-3">
+    <div class="stat-card">
+      <div class="stat-icon orange">📅</div>
+      <div><div class="stat-val" style="color:var(--warning)">{{ stats.today }}</div><div class="stat-lbl">Today</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- Actions -->
+<div class="row g-3 mb-4">
+  <div class="col-md-4">
+    <a href="{{ url_for('predict') }}" class="action-btn primary">
+      <div class="action-btn-icon"></div>
+      <div><h6>New Analysis</h6><p>Submit an image for AI diagnosis</p></div>
+    </a>
+  </div>
+  <div class="col-md-4">
+    <a href="{{ url_for('patients') }}" class="action-btn">
+      <div class="action-btn-icon"></div>
+      <div><h6>My Patients</h6><p>View all your scan history</p></div>
+    </a>
+  </div>
+  <div class="col-md-4">
+    <a href="{{ url_for('alerts') }}" class="action-btn ai">
+      <div class="action-btn-icon"></div>
+      <div>
+        <h6>Patient Alerts {% if stats.alerts %}<span class="badge bg-danger" style="font-size:0.7rem;">{{ stats.alerts }}</span>{% endif %}</h6>
+        <p>Review malignant cases from patients</p>
+      </div>
+    </a>
+  </div>
+</div>
+
+<!-- Recent -->
+{% if recent %}
+<div class="card">
+  <div class="card-header"><i class="bi bi-clock-history me-2"></i>Recent Scans</div>
+  <div class="card-body p-0">
+    <table class="table table-hover mb-0 ptable">
+      <thead>
+        <tr>
+          <th class="ps-4">Patient</th><th>Age</th><th>Result</th><th>Confidence</th><th>Date</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for p in recent %}
+        <tr>
+          <td class="ps-4 fw-semibold">{{ p.name }}</td>
+          <td>{{ p.age }} yrs</td>
+          <td>
+            {% if p.result == 'Malignant' %}
+              <span class="tag tag-m"><i class="bi bi-exclamation-triangle"></i> Malignant</span>
+            {% else %}
+              <span class="tag tag-b"><i class="bi bi-check-circle"></i> Benign</span>
+            {% endif %}
+          </td>
+          <td>{{ (p.probability * 100) | round(1) }}%</td>
+          <td class="text-muted small">{{ p.created_at.strftime('%d/%m/%Y') if p.created_at else '—' }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+<div class="mt-2 text-end">
+  <a href="{{ url_for('patients') }}" class="text-primary small fw-semibold">View all patients →</a>
+</div>
+{% else %}
+<div class="card">
+  <div class="card-body empty-state">
+    <div class="empty-icon"></div>
+    <p class="fw-semibold mb-1">No scans yet</p>
+    <p class="small mb-3">Start by analyzing your first skin lesion image.</p>
+    <a href="{{ url_for('predict') }}" class="btn btn-primary">New Analysis</a>
+  </div>
+</div>
+{% endif %}
+{% endblock %}

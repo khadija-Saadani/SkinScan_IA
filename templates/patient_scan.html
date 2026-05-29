@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>SkinScan AI — New Scan</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"/>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet"/>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}"/>
+  <style>
+    #toastContainer{position:fixed;top:1.25rem;left:50%;transform:translateX(-50%);z-index:9999;display:flex;flex-direction:column;align-items:center;gap:.6rem;pointer-events:none;width:100%;max-width:520px;padding:0 1rem}
+    .sk-toast{width:100%;pointer-events:all;display:flex;align-items:flex-start;gap:.85rem;padding:1rem 1.1rem;border-radius:14px;box-shadow:0 4px 6px rgba(0,0,0,.04),0 12px 28px rgba(0,0,0,.10),0 0 0 1px rgba(0,0,0,.06);background:rgba(255,255,255,.97);border-left:4px solid transparent;position:relative;overflow:hidden;animation:toastIn .38s cubic-bezier(.34,1.56,.64,1) forwards}
+    .sk-toast::after{content:'';position:absolute;bottom:0;left:0;height:2px;opacity:.6;animation:toastProgress linear forwards}
+    .sk-toast.success{border-left-color:#00c8a0;background:rgba(240,253,249,.97)}.sk-toast.success::after{background:#00c8a0;animation-duration:4s}
+    .sk-toast.danger{border-left-color:#e8445a;background:rgba(255,238,241,.97)}.sk-toast.danger::after{background:#e8445a;animation-duration:5s}
+    .sk-toast.warning{border-left-color:#f5a623;background:rgba(255,250,235,.97)}.sk-toast.warning::after{background:#f5a623;animation-duration:5s}
+    .sk-toast.info{border-left-color:#0a6eb4;background:rgba(232,243,252,.97)}.sk-toast.info::after{background:#0a6eb4;animation-duration:4s}
+    .sk-toast-icon{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.95rem;font-weight:700;flex-shrink:0}
+    .sk-toast.success .sk-toast-icon{background:#d1fae5;color:#059669}.sk-toast.danger .sk-toast-icon{background:#fee2e2;color:#dc2626}.sk-toast.warning .sk-toast-icon{background:#fef3c7;color:#d97706}.sk-toast.info .sk-toast-icon{background:#dbeafe;color:#2563eb}
+    .sk-toast-body{flex:1;min-width:0;padding-top:.1rem}.sk-toast-title{font-size:.78rem;font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin:0 0 .2rem}
+    .sk-toast.success .sk-toast-title{color:#065f46}.sk-toast.danger .sk-toast-title{color:#991b1b}.sk-toast.warning .sk-toast-title{color:#92400e}.sk-toast.info .sk-toast-title{color:#1e40af}
+    .sk-toast-msg{font-size:.87rem;line-height:1.5;margin:0}
+    .sk-toast.success .sk-toast-msg{color:#064e3b}.sk-toast.danger .sk-toast-msg{color:#7f1d1d}.sk-toast.warning .sk-toast-msg{color:#78350f}.sk-toast.info .sk-toast-msg{color:#1e3a5f}
+    .sk-toast-close{background:none;border:none;cursor:pointer;padding:.2rem;border-radius:6px;font-size:.9rem;opacity:.4;transition:opacity .15s;flex-shrink:0;color:inherit}.sk-toast-close:hover{opacity:.8}
+    .sk-toast.dismissing{animation:toastOut .28s cubic-bezier(.4,0,1,1) forwards}
+    @keyframes toastIn{from{opacity:0;transform:translateY(-16px) scale(.95)}to{opacity:1;transform:translateY(0) scale(1)}}
+    @keyframes toastOut{from{opacity:1;max-height:120px}to{opacity:0;transform:translateY(-12px) scale(.95);max-height:0;padding:0}}
+    @keyframes toastProgress{from{width:100%}to{width:0%}}
+  </style>
+</head>
+<body>
+<nav class="navbar sticky-top">
+  <div class="container d-flex align-items-center">
+    <a class="navbar-brand" href="{{ url_for('patient_dashboard') }}">Skin<span>Scan</span> AI</a>
+    <div class="ms-auto d-flex align-items-center gap-2">
+      <span class="text-muted small fw-semibold d-none d-md-block"><i class="bi bi-person-circle me-1"></i>{{ session.get('patient_name') }}</span>
+      <a href="{{ url_for('patient_dashboard') }}" class="nav-pill"><i class="bi bi-grid-1x2"></i> My Scans</a>
+      <a href="{{ url_for('patient_scan') }}" class="nav-pill active"><i class="bi bi-camera"></i> New Scan</a>
+      <a href="{{ url_for('patient_ai') }}" class="nav-pill" style="background:linear-gradient(135deg,#7c3aed,#9333ea);color:white;"><i class="bi bi-stars"></i> Ask Aria</a>
+      <a href="{{ url_for('patient_logout') }}" class="btn btn-sm btn-outline-secondary"><i class="bi bi-box-arrow-right"></i></a>
+    </div>
+  </div>
+</nav>
+
+<div id="toastContainer" aria-live="polite"></div>
+
+<div class="container py-4">
+  <div class="page-header">
+    <h2><i class="bi bi-camera-fill me-2 text-primary"></i>New Skin Scan</h2>
+    <p>Upload a clear photo of your skin lesion for AI analysis.</p>
+  </div>
+
+  <div class="row justify-content-center">
+    <div class="col-lg-7">
+      <div class="card mb-4 p-4" style="background:linear-gradient(135deg,#e8f3fc,#f0f7ff);border-color:var(--primary);">
+        <h6 class="fw-bold mb-3"><i class="bi bi-lightbulb-fill text-warning me-2"></i>Tips for Best Results</h6>
+        <div class="row g-2">
+          <div class="col-6"><div class="d-flex align-items-center gap-2 small"><i class="bi bi-check-circle-fill text-success"></i>Good lighting, no shadows</div></div>
+          <div class="col-6"><div class="d-flex align-items-center gap-2 small"><i class="bi bi-check-circle-fill text-success"></i>Close-up, centered on lesion</div></div>
+          <div class="col-6"><div class="d-flex align-items-center gap-2 small"><i class="bi bi-check-circle-fill text-success"></i>Sharp focus, not blurry</div></div>
+          <div class="col-6"><div class="d-flex align-items-center gap-2 small"><i class="bi bi-check-circle-fill text-success"></i>No filters or editing</div></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header"><i class="bi bi-image me-2"></i>Scan Information</div>
+        <div class="card-body p-4">
+          <form method="POST" enctype="multipart/form-data" id="scanForm">
+            <div class="mb-4">
+              <label class="form-label">Photo of the lesion</label>
+              <div class="upload-zone" id="uploadZone" onclick="document.getElementById('imgInput').click()">
+                <div class="up-icon"><i class="bi bi-cloud-arrow-up"></i></div>
+                <p class="fw-semibold mt-2 mb-1">Click or drag your photo here</p>
+                <p class="text-muted small mb-0">JPG, PNG — Max 10MB</p>
+                <div id="prevBox" class="mt-3" style="display:none;">
+                  <img id="prevImg" src="" alt="preview" style="max-height:220px;border-radius:12px;object-fit:cover;"/>
+                  <p id="prevName" class="small text-muted mt-2 mb-0 fw-semibold"></p>
+                </div>
+              </div>
+              <input type="file" id="imgInput" name="image" accept=".png,.jpg,.jpeg" class="d-none" required/>
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label"><i class="bi bi-geo-alt me-1"></i>Location on body</label>
+              <select class="form-select" name="body_part" required>
+                <option value="">Select body part...</option>
+                <option>Face</option><option>Neck</option><option>Chest</option>
+                <option>Back</option><option>Arm</option><option>Hand</option>
+                <option>Leg</option><option>Foot</option><option>Scalp</option><option>Other</option>
+              </select>
+            </div>
+
+            <div class="mb-4">
+              <label class="form-label"><i class="bi bi-chat-text me-1"></i>Describe your symptoms <span class="text-muted fw-normal">(optional)</span></label>
+              <textarea class="form-control" name="symptoms" rows="3"
+                placeholder="How long have you noticed it? Has it changed in size or color? Any itching or bleeding?"></textarea>
+            </div>
+
+            <button type="submit" class="btn btn-success w-100 btn-lg" id="submitBtn">
+              <i class="bi bi-cpu me-2"></i>Analyze with AI
+            </button>
+          </form>
+        </div>
+      </div>
+
+      <p class="text-center text-muted mt-3 small">
+        <i class="bi bi-shield-lock me-1"></i>Your images are stored securely and only shared with reviewing doctors.
+      </p>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+const FLASH_MESSAGES = [
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% for c, m in messages %}{ category:"{{ c }}", message:`{{ m | replace('`', "'") }}`},{% endfor %}
+  {% endwith %}
+];
+
+// Upload preview
+const input = document.getElementById('imgInput');
+const prevImg = document.getElementById('prevImg');
+const prevBox = document.getElementById('prevBox');
+const prevName = document.getElementById('prevName');
+const zone = document.getElementById('uploadZone');
+const submitBtn = document.getElementById('submitBtn');
+
+input.addEventListener('change', function() {
+  if (this.files && this.files[0]) {
+    const reader = new FileReader();
+    reader.onload = e => { prevImg.src = e.target.result; prevBox.style.display = 'block'; };
+    reader.readAsDataURL(this.files[0]);
+    prevName.textContent = this.files[0].name;
+  }
+});
+zone.addEventListener('dragover', e => { e.preventDefault(); zone.classList.add('dragover'); });
+zone.addEventListener('dragleave', () => zone.classList.remove('dragover'));
+zone.addEventListener('drop', e => {
+  e.preventDefault(); zone.classList.remove('dragover');
+  input.files = e.dataTransfer.files; input.dispatchEvent(new Event('change'));
+});
+document.getElementById('scanForm').addEventListener('submit', () => {
+  submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Analyzing...';
+  submitBtn.disabled = true;
+});
+
+// Toast system
+const _TC = { success:{icon:'✓',title:'Success'}, danger:{icon:'✕',title:'Error'}, warning:{icon:'⚠',title:'Warning'}, info:{icon:'i',title:'Info'} };
+const _TD = { success:4000, danger:5000, warning:5000, info:4000 };
+function showToast(cat, msg) {
+  const c = _TC[cat] ? cat : 'info';
+  const t = document.createElement('div');
+  t.className = `sk-toast ${c}`;
+  t.innerHTML = `<div class="sk-toast-icon">${_TC[c].icon}</div><div class="sk-toast-body"><p class="sk-toast-title">${_TC[c].title}</p><p class="sk-toast-msg">${msg}</p></div><button class="sk-toast-close" onclick="dismissToast(this.parentElement)">✕</button>`;
+  document.getElementById('toastContainer').appendChild(t);
+  t._timer = setTimeout(() => dismissToast(t), _TD[c]);
+}
+function dismissToast(t) {
+  if (!t || t.classList.contains('dismissing')) return;
+  clearTimeout(t._timer); t.classList.add('dismissing');
+  t.addEventListener('animationend', () => t.remove(), { once: true });
+}
+window.showToast = showToast;
+document.addEventListener('DOMContentLoaded', () => {
+  FLASH_MESSAGES.forEach((m, i) => setTimeout(() => showToast(m.category, m.message), i * 150));
+});
+</script>
+</body>
+</html>

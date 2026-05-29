@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>SkinScan AI — Patient Login</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"/>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet"/>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}"/>
+</head>
+<body>
+<div class="auth-wrapper">
+  <!-- Visual -->
+  <div class="auth-visual" style="background: linear-gradient(145deg, #0a6eb4 0%, #052d4a 50%, #001529 100%);">
+    <div class="auth-visual-content">
+      <div class="auth-visual-icon"></div>
+      <h2>Your Health,<br>Your Control</h2>
+      <p>Get an instant AI-powered skin analysis — reviewed by real dermatologists.</p>
+      <div class="auth-feature"><div class="dot"></div><span>Instant AI scan results</span></div>
+      <div class="auth-feature"><div class="dot"></div><span>Doctor reviews high-risk cases</span></div>
+      <div class="auth-feature"><div class="dot"></div><span>100% free for patients</span></div>
+      <div class="auth-feature"><div class="dot"></div><span>Your scan history, always available</span></div>
+    </div>
+  </div>
+
+  <!-- Form -->
+  <div class="auth-form-side">
+    <div class="auth-form-box">
+      <a href="{{ url_for('landing') }}" class="text-muted small d-flex align-items-center gap-1 mb-4" style="text-decoration:none;">
+        <i class="bi bi-arrow-left"></i> Back to Home
+      </a>
+      <div class="auth-logo">Skin<span>Scan</span> AI</div>
+      <p class="auth-tagline">Patient Portal — Sign in to your account</p>
+
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}{% for cat, msg in messages %}
+          <div class="alert alert-{{ cat }} mb-3">{{ msg }}</div>
+        {% endfor %}{% endif %}
+      {% endwith %}
+
+      <form method="POST">
+        <div class="mb-3">
+          <label class="form-label"><i class="bi bi-envelope me-1"></i>Email Address</label>
+          <input type="email" name="email" class="form-control" placeholder="your@email.com" required autofocus/>
+        </div>
+        <div class="mb-4">
+          <label class="form-label"><i class="bi bi-lock me-1"></i>Password</label>
+          <input type="password" name="password" class="form-control" placeholder="••••••••" required/>
+        </div>
+        <button type="submit" class="btn btn-primary w-100 btn-lg mb-3">
+          <i class="bi bi-box-arrow-in-right me-2"></i>Sign In
+        </button>
+      </form>
+
+      <p class="text-center text-muted" style="font-size:0.85rem;">
+        Don't have an account?
+        <a href="{{ url_for('patient_register') }}" style="color:var(--primary);font-weight:600;">Create one free →</a>
+      </p>
+      <hr class="my-3"/>
+      <p class="text-center text-muted mb-0" style="font-size:0.78rem;">
+        Are you a doctor?
+        <a href="{{ url_for('login') }}" style="color:var(--accent);font-weight:600;">Doctor Portal →</a>
+      </p>
+    </div>
+  </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>SkinScan AI — My Scans</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"/>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet"/>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}"/>
+</head>
+<body>
+<nav class="navbar sticky-top">
+  <div class="container d-flex align-items-center">
+    <a class="navbar-brand" href="{{ url_for('patient_dashboard') }}">Skin<span>Scan</span> AI</a>
+    <div class="ms-auto d-flex align-items-center gap-2">
+      <span class="text-muted small fw-semibold d-none d-md-block"><i class="bi bi-person-circle me-1"></i>{{ session.get('patient_name') }}</span>
+      <a href="{{ url_for('patient_dashboard') }}" class="nav-pill active"><i class="bi bi-grid-1x2"></i> My Scans</a>
+      <a href="{{ url_for('patient_scan') }}" class="nav-pill"><i class="bi bi-camera"></i> New Scan</a>
+      <a href="{{ url_for('patient_ai') }}" class="nav-pill" style="background:linear-gradient(135deg,#7c3aed,#9333ea);color:white;"><i class="bi bi-stars"></i> Ask Aria</a>
+      <a href="{{ url_for('patient_logout') }}" class="btn btn-sm btn-outline-secondary"><i class="bi bi-box-arrow-right"></i></a>
+    </div>
+  </div>
+</nav>
+
+<div class="container py-4">
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}{% for cat, msg in messages %}
+      <div class="alert alert-{{ cat }} alert-dismissible fade show"><button type="button" class="btn-close" data-bs-dismiss="alert"></button>{{ msg }}</div>
+    {% endfor %}{% endif %}
+  {% endwith %}
+
+  <!-- Hero -->
+  <div class="dash-hero mb-4">
+    <h1>Hello, {{ session.get('patient_name', 'there') }} 👋</h1>
+    <p>Here are all your skin scans and doctor responses.</p>
+  </div>
+
+  <!-- CTA if no scans -->
+  {% if not scans %}
+  <div class="card text-center p-5">
+    <div style="font-size:4rem;margin-bottom:1rem;">🔬</div>
+    <h4 class="fw-bold mb-2">No scans yet</h4>
+    <p class="text-muted mb-4">Upload your first skin photo to get an instant AI analysis.</p>
+    <div>
+      <a href="{{ url_for('patient_scan') }}" class="btn btn-primary btn-lg">
+        <i class="bi bi-camera me-2"></i>Start Your First Scan
+      </a>
+    </div>
+  </div>
+
+  {% else %}
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h5 class="fw-bold mb-0">{{ scans | length }} scan(s)</h5>
+    <a href="{{ url_for('patient_scan') }}" class="btn btn-primary btn-sm">
+      <i class="bi bi-plus me-1"></i>New Scan
+    </a>
+  </div>
+
+  <div class="row g-4">
+    {% for s in scans %}
+    <div class="col-md-6">
+      <div class="card h-100" style="border-left: 4px solid {% if s.result == 'Malignant' %}var(--danger){% else %}var(--accent){% endif %};">
+        <div class="card-body p-4">
+          <!-- Scan header with delete -->
+          <div class="d-flex align-items-start justify-content-between mb-3">
+            <div>
+              <span class="result-badge result-{{ s.result | lower }} mb-2" style="font-size:0.85rem;padding:0.4rem 1rem;">
+                {% if s.result == 'Malignant' %}⚠️ Malignant{% else %}✅ Benign{% endif %}
+              </span>
+              <p class="text-muted small mb-0 mt-2">
+                <i class="bi bi-geo-alt me-1"></i>{{ s.body_part or 'Not specified' }} &nbsp;·&nbsp;
+                <i class="bi bi-calendar me-1"></i>{{ s.created_at.strftime('%d %b %Y') if s.created_at else '—' }}
+              </p>
+            </div>
+            <div class="d-flex align-items-start gap-2">
+              {% if s.image_path %}
+              <img src="{{ url_for('static', filename=s.image_path) }}" width="70" height="60"
+                   style="object-fit:cover;border-radius:10px;border:1px solid var(--border);cursor:pointer;"
+                   onclick="document.getElementById('mi').src=this.src;new bootstrap.Modal(document.getElementById('imgModal')).show()"/>
+              {% endif %}
+              <!-- Delete button -->
+              <form method="POST" action="{{ url_for('patient_delete_scan', scan_id=s.id) }}"
+                    onsubmit="return confirm('Delete this scan permanently?')">
+                <button type="submit" class="btn btn-sm btn-outline-danger" title="Delete scan"
+                        style="width:34px;height:34px;padding:0;display:flex;align-items:center;justify-content:center;border-radius:8px;">
+                  <i class="bi bi-trash"></i>
+                </button>
+              </form>
+            </div>
+          </div>
+
+          <!-- Confidence bar -->
+          <div class="mb-3">
+            <div class="d-flex justify-content-between mb-1">
+              <span class="small fw-semibold">AI Confidence</span>
+              <span class="small fw-bold">{{ (s.probability * 100) | round(1) }}%</span>
+            </div>
+            <div class="conf-track">
+              <div class="conf-bar conf-{{ s.result | lower }}" style="width:{{ (s.probability * 100) | round(0) }}%"></div>
+            </div>
+          </div>
+
+          {% if s.symptoms %}
+          <p class="small text-muted mb-3"><i class="bi bi-chat-text me-1"></i>{{ s.symptoms[:100] }}{% if s.symptoms|length > 100 %}...{% endif %}</p>
+          {% endif %}
+
+          <!-- Doctor Response -->
+          {% if s.doctor_message %}
+          <div class="p-3 rounded-3 mt-2" style="background:linear-gradient(135deg,#f0f7ff,#e8f3fc);border:1px solid var(--primary);">
+            <div class="d-flex align-items-center gap-2 mb-2">
+              <span style="font-size:1.2rem;">👨‍⚕️</span>
+              <div>
+                <p class="fw-bold mb-0 small" style="color:var(--primary);">Dr. {{ s.doctor_name or 'Dermatologist' }}</p>
+                <p class="text-muted mb-0" style="font-size:0.72rem;">{{ s.response_date.strftime('%d %b %Y, %H:%M') if s.response_date else '' }}</p>
+              </div>
+              {% if s.urgency == 'urgent' %}
+              <span class="ms-auto badge bg-danger" style="font-size:0.7rem;">Urgent</span>
+              {% elif s.urgency == 'followup' %}
+              <span class="ms-auto badge bg-warning text-dark" style="font-size:0.7rem;">Follow-up</span>
+              {% else %}
+              <span class="ms-auto badge bg-success" style="font-size:0.7rem;">Normal</span>
+              {% endif %}
+            </div>
+            <p class="mb-0 small">{{ s.doctor_message }}</p>
+          </div>
+          {% elif s.alert_level == 'high' %}
+          <div class="p-3 rounded-3 mt-2" style="background:#fff8ee;border:1px solid #fde8b0;">
+            <div class="d-flex align-items-center gap-2">
+              <i class="bi bi-clock-history text-warning fs-5"></i>
+              <div>
+                <p class="fw-semibold mb-0 small">Awaiting Doctor Review</p>
+                <p class="text-muted mb-0" style="font-size:0.77rem;">A dermatologist has been notified and will respond shortly.</p>
+              </div>
+            </div>
+          </div>
+          {% else %}
+          <div class="p-3 rounded-3 mt-2" style="background:#f5f8fc;border:1px solid var(--border);">
+            <p class="text-muted mb-0 small"><i class="bi bi-info-circle me-1"></i>Result is benign — no doctor review required. Monitor for any changes.</p>
+          </div>
+          {% endif %}
+
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+</div>
+
+<!-- Image Modal -->
+<div class="modal fade" id="imgModal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered modal-sm">
+    <div class="modal-content border-0 bg-transparent">
+      <img id="mi" src="" alt="" style="width:100%;border-radius:14px;box-shadow:0 20px 60px rgba(0,0,0,0.4);"/>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

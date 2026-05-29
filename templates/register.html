@@ -1,0 +1,58 @@
+{% extends 'base.html' %}
+{% block title %}Create an Account{% endblock %}
+
+{% block content %}
+<div class="auth-wrapper" style="margin: -1.5rem;">
+  <!-- Left visual -->
+  <div class="auth-visual">
+    <div class="auth-visual-content">
+      <div class="auth-visual-icon"></div>
+      <h2>Join SkinScan AI</h2>
+      <p>Create your doctor account and access the full power of dermatological AI.</p>
+      <div class="auth-feature"><div class="dot"></div><span>Secure personal account</span></div>
+      <div class="auth-feature"><div class="dot"></div><span>Private history of your analyses</span></div>
+    </div>
+  </div>
+
+  <!-- Right form -->
+  <div class="auth-form-side">
+    <div class="auth-form-box">
+      <div class="auth-logo">Skin<span>Scan</span> AI</div>
+      <p class="auth-tagline">Create your personal medical workspace</p>
+
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}{% for cat, msg in messages %}
+          <div class="alert alert-{{ cat }} mb-3">{{ msg }}</div>
+        {% endfor %}{% endif %}
+      {% endwith %}
+
+      <form method="POST">
+        <div class="mb-3">
+          <label class="form-label"><i class="bi bi-person-badge me-1"></i>Full name</label>
+          <input type="text" name="full_name" class="form-control" placeholder="Dr. Mohamed Ben Ali" required autofocus/>
+        </div>
+        <div class="mb-3">
+          <label class="form-label"><i class="bi bi-at me-1"></i>Username</label>
+          <input type="text" name="username" class="form-control" placeholder="dr.benali" required/>
+        </div>
+        <div class="mb-3">
+          <label class="form-label"><i class="bi bi-lock me-1"></i>Password</label>
+          <input type="password" name="password" class="form-control" placeholder="Minimum 4 characters" required/>
+        </div>
+        <div class="mb-4">
+          <label class="form-label"><i class="bi bi-lock-fill me-1"></i>Confirm password</label>
+          <input type="password" name="confirm" class="form-control" placeholder="Repeat your password" required/>
+        </div>
+        <button type="submit" class="btn btn-success w-100 btn-lg mb-3">
+          <i class="bi bi-person-plus me-2"></i>Create my account
+        </button>
+      </form>
+
+      <p class="text-center text-muted" style="font-size:0.85rem;">
+        Already have an account?
+        <a href="{{ url_for('login') }}" style="color:var(--primary);font-weight:600;">Log in</a>
+      </p>
+    </div>
+  </div>
+</div>
+{% endblock %}

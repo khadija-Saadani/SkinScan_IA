@@ -1,0 +1,11 @@
+flask
+flask-cors
+python-dotenv
+mysql-connector-python
+numpy
+pillow
+werkzeug
+tensorflow
+keras
+opencv-python-headless
+groq

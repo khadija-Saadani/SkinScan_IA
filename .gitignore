@@ -1,0 +1,25 @@
+# ── Secrets ───────────────────────────────
+.env
+ 
+# ── Model (too large for GitHub) ──────────
+model/
+*.h5
+*.keras
+ 
+# ── Uploaded images ───────────────────────
+static/uploads/
+ 
+# ── Python ────────────────────────────────
+__pycache__/
+*.py[cod]
+*.pyo
+venv/
+.venv/
+env/
+ 
+# ── VS Code ───────────────────────────────
+.vscode/
+ 
+# ── OS ────────────────────────────────────
+.DS_Store
+Thumbs.db
