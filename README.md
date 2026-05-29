@@ -19,16 +19,16 @@
 
 **SkinScan AI** is a full-stack web platform that uses deep learning to assist in the early detection of skin cancer. Unlike traditional tools built only for doctors, SkinScan AI is a **complete end-to-end medical ecosystem** with two distinct portals:
 
--  **Patient Portal** — Anyone can upload a photo of a skin lesion from home, get an instant AI result, and receive a personal response from a dermatologist if the result is concerning.
+-  **Patient Portal** — Anyone can upload a photo of a skin lesion from home, get an instant AI result, interact with Aria AI (an intelligent medical chatbot for patient education and support), and receive a personal response from a dermatologist if the result is concerning.
 -  **Doctor Portal** — Dermatologists manage their analyses, receive automatic alerts for high-risk patient cases, and respond directly to patients through the platform.
 
-> ⚕️ *This platform is a screening aid only and does not constitute a medical diagnosis.*
+>  *This platform is a screening aid only and does not constitute a medical diagnosis.*
 
 ---
 
-## 🎬 Demo
+##  Demo
 
-> 📹 *[Watch the full demo video →](#)*
+>  *[Watch the full demo video →](#)*
 
 ---
 
@@ -37,14 +37,14 @@
 ### 🧑 Patient Side
 | Feature | Description |
 |---|---|
-| 🔐 Register / Login | Patients create their own secure accounts |
-| 📸 Skin Scan | Upload a photo — AI analyzes it in seconds |
-| 🛡️ Skin Validator | Non-skin images are automatically rejected |
-| 🧠 Instant AI Result | Benign or Malignant with confidence score |
-| 🔔 Doctor Alert | Doctor automatically notified for Malignant results |
-| 💬 Doctor Response | Receive personalized feedback directly in dashboard |
-| 🌸 Ask Aria | AI health assistant that explains results in simple language |
-| 🗑️ Delete Scans | Full control over personal scan history |
+|  Register / Login | Patients create their own secure accounts |
+|  Skin Scan | Upload a photo — AI analyzes it in seconds |
+|  Skin Validator | Non-skin images are automatically rejected |
+|  Instant AI Result | Benign or Malignant with confidence score |
+|  Doctor Alert | Doctor automatically notified for Malignant results |
+|  Doctor Response | Receive personalized feedback directly in dashboard |
+|  Ask Aria | AI health assistant that explains results in simple language |
+|  Delete Scans | Full control over personal scan history |
 
 ### 👨‍⚕️ Doctor Side
 | Feature | Description |
@@ -125,13 +125,13 @@ VGG16 Base (ImageNet weights)
 
 ---
 
-## 📊 Model Performance
+##  Model Performance
 
 Evaluated on a held-out test set of **132 images**:
 
 ### Confusion Matrix
 
-![confusix_matrix](images/matrix.png)
+![confusix_matrix](static/confusion.png)
 
 ### Metrics
 
@@ -164,7 +164,7 @@ In medical screening AI, **Sensitivity (88.9%)** matters more than accuracy. A h
 
 ---
 
-## 🗃️ Database Schema
+##  Database Schema
 
 ```sql
 users             → Doctor accounts (username, password, full_name, role)
@@ -178,7 +178,7 @@ chat_history      → Aria conversation history per patient
 ---
 
 
-## 🚀 Getting Started
+## 📌 Getting Started
 
 ### Prerequisites
 - Python 3.10+
@@ -255,7 +255,7 @@ SKIN_CANCER_APP/
 
 ---
 
-## 🧰 Tech Stack
+##  Tech Stack
 
 | Layer | Technology |
 |---|---|
